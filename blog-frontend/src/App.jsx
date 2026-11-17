@@ -1,13 +1,14 @@
+
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
 import PublicLayout from './components/PublicLayout';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './components/protectedroute';
 
 // Pages publiques
-import Home from './pages/Home';
+import Home from './pages/home';
 import Login from './pages/login';
-import Register from './pages/Register';
+import Register from './pages/register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import About from './pages/About';
@@ -24,11 +25,12 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminCategories from './pages/admin/AdminCategories';
 
 // Lecteur
-import UserLayout from './pages/lecteur/UserLayout';
-import UserDashboard from './pages/lecteur/UserDashboard';
-import UserProfile from './pages/lecteur/UserProfile';
-import UserComments from './pages/lecteur/UserComments';
-import UserPassword from './pages/lecteur/UserPassword';
+import UserLayout from './pages/Lecteur/UserLayout';
+import UserDashboard from './pages/Lecteur/UserDashboard';
+import UserProfile from './pages/Lecteur/UserProfile';
+import UserComments from './pages/Lecteur/UserComments';
+import UserPassword from './pages/Lecteur/UserPassword';
+
 
 function App() {
   return (
