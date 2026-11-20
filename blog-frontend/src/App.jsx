@@ -1,14 +1,13 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
 import PublicLayout from './components/PublicLayout';
-import ProtectedRoute from './components/protectedroute';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages publiques
-import Home from './pages/home';
+import Home from './pages/Home';
 import Login from './pages/login';
-import Register from './pages/register';
+import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import About from './pages/About';
@@ -23,13 +22,17 @@ import ArticleForm from './pages/admin/ArticleForm';
 import AdminComments from './pages/admin/AdminComments';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminCategories from './pages/admin/AdminCategories';
+import AdminProfile from './pages/admin/AdminProfile';
+import AdminPassword from './pages/admin/AdminPassword';
+import AdminUserEdit from './pages/admin/AdminUserEdit';
 
 // Lecteur
-import UserLayout from './pages/Lecteur/UserLayout';
-import UserDashboard from './pages/Lecteur/UserDashboard';
-import UserProfile from './pages/Lecteur/UserProfile';
-import UserComments from './pages/Lecteur/UserComments';
-import UserPassword from './pages/Lecteur/UserPassword';
+import UserLayout from './pages/lecteur/UserLayout';
+import UserDashboard from './pages/lecteur/UserDashboard';
+import UserProfile from './pages/lecteur/UserProfile';
+import UserComments from './pages/lecteur/UserComments';
+import UserPassword from './pages/lecteur/UserPassword';
+import UserHistory from './pages/lecteur/UserHistory';
 
 
 function App() {
@@ -59,6 +62,7 @@ function App() {
               <Route path="articles" element={<Articles />} />
               <Route path="articles/:id" element={<ArticleDetail />} />
               <Route path="password" element={<UserPassword />} />
+              <Route path="history" element={<UserHistory />} />
             </Route>
           </Route>
 
@@ -72,6 +76,10 @@ function App() {
               <Route path="articles/:id/edit" element={<ArticleForm />} />
               <Route path="comments" element={<AdminComments />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="profile" element={<AdminProfile />} />
+              <Route path="password" element={<AdminPassword />} />
+              <Route path="users/:id/edit" element={<AdminUserEdit />} />
+    
             </Route>
           </Route>
 

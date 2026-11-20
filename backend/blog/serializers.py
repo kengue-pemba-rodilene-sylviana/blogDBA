@@ -41,11 +41,23 @@ class CommentSerializer(serializers.ModelSerializer):
     author = UserSummarySerializer(read_only=True)
     author_name = serializers.CharField(source="author.username", read_only=True)
     article_title = serializers.CharField(source="article.title", read_only=True)
+    replies = serializers.SerializerMethodField()          # ← AJOUT
+
     class Meta:
         model = Comment
-        fields = ["id", "article","article_title", "author", "author_name", "content", "created_at", "updated_at"]
-        read_only_fields = ["id", "author", "author_name", "created_at", "updated_at"]
+        fields = [
+            "id", "article", "article_title",
+            "parent",
+            "author", "author_name",
+            "content", "created_at", "updated_at",
+            "replies",
+        ]
+        read_only_fields = ["id", "author", "created_at", "updated_at", "replies"]
 
+    def get_replies(self, obj):
+        # Ne sérialiser que les réponses de premier niveau
+        replies = obj.replies.all().order_by("created_at")
+        return CommentSerializer(replies, many=True, context=self.context).data
 
 class ArticleSerializer(serializers.ModelSerializer):
     author = UserSummarySerializer(read_only=True)
@@ -64,11 +76,17 @@ class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id", "username", "email", "role",
-            "is_active", "is_staff", "date_joined",
+            "id", "username", "email",
+            "first_name", "last_name",
+            "role", "is_active", "is_staff", "is_superuser",
+            "date_joined",
             "comment_count", "article_count",
         ]
-        read_only_fields = fields
+        read_only_fields = ["id", "date_joined", "comment_count", "article_count"]
+        extra_kwargs = {
+            "username": {"required": False},
+            "email": {"required": False},
+        }
 
 class FavoriteSerializer(serializers.ModelSerializer):
     article_title = serializers.CharField(source='article.title', read_only=True)
@@ -79,8 +97,24 @@ class FavoriteSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'created_at']
         
 class ArticleViewSerializer(serializers.ModelSerializer):
+    """Utilisé pour l'enregistrement (POST)."""
     class Meta:
         model = ArticleView
-        fields = ['id', 'article', 'viewed_at']
+        fields = ['id', 'article', 'viewed_at', 'progress']
         read_only_fields = ['id', 'viewed_at']
-        
+
+
+class ArticleViewHistorySerializer(serializers.ModelSerializer):
+    """Utilisé pour l'affichage de l'historique (GET)."""
+    article_title = serializers.CharField(source='article.title', read_only=True)
+    article_image = serializers.CharField(source='article.image_url', read_only=True)
+    category_name = serializers.CharField(source='article.category.name', read_only=True)
+    category_slug = serializers.CharField(source='article.category.slug', read_only=True)
+
+    class Meta:
+        model = ArticleView
+        fields = [
+            'id', 'article', 'article_title', 'article_image',
+            'category_name', 'category_slug', 'viewed_at', 'progress',
+        ]
+        read_only_fields = fields

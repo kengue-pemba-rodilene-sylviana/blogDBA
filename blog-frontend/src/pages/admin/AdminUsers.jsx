@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 
@@ -68,7 +69,6 @@ const AdminUsers = () => {
         </div>
       )}
 
-      {/* Recherche */}
       <div style={{ marginBottom: 16 }}>
         <input
           type="text"
@@ -99,7 +99,7 @@ const AdminUsers = () => {
                 <th style={{ width: 90 }}>Articles</th>
                 <th style={{ width: 110 }}>Commentaires</th>
                 <th style={{ width: 140 }}>Inscrit le</th>
-                <th style={{ width: 100 }}></th>
+                <th style={{ width: 180 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -143,7 +143,14 @@ const AdminUsers = () => {
                     <td className="muted">{u.article_count}</td>
                     <td className="muted">{u.comment_count}</td>
                     <td className="muted">{formatDate(u.date_joined)}</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <Link
+                        to={`/admin/users/${u.id}/edit`}
+                        className="btn btn-secondary btn-sm"
+                        style={{ marginRight: 6, textDecoration: 'none' }}
+                      >
+                        Modifier
+                      </Link>
                       {!isMe && (
                         <button
                           className="btn btn-danger btn-sm"

@@ -29,10 +29,38 @@ const ArticleDetail = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!user || !id) return;
-    api.post('/article-views/', { article: Number(id) })
-      .catch((err) => console.error('Track article:', err.response?.status, err.response?.data));
-  }, [user, id]);
+  if (!user || !id) return;
+
+  let lastSent = 0;
+
+  const sendProgress = () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0
+      ? Math.min(100, Math.round((scrollTop / docHeight) * 100))
+      : 0;
+
+    // Envoie seulement si progression ≥ 10% ou 100% atteint
+    if (progress - lastSent >= 10 || progress === 100) {
+      lastSent = progress;
+      api.post('/article-views/', { article: Number(id), progress })
+        .catch(() => {});
+    }
+  };
+
+  // Enregistrement initial (article ouvert, 0%)
+  api.post('/article-views/', { article: Number(id), progress: 0 })
+    .catch(() => {});
+
+  // Tracking scroll
+  window.addEventListener('scroll', sendProgress, { passive: true });
+
+  // Marquer 100% à la fermeture
+  return () => {
+    window.removeEventListener('scroll', sendProgress);
+    api.post('/article-views/', { article: Number(id), progress: 100 }).catch(() => {});
+  };
+}, [user, id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -109,21 +137,57 @@ const ArticleDetail = () => {
         ) : (
           <ul className="comments-list">
             {comments.map((c) => (
-              <li key={c.id} className="comment-item">
-                <div className="comment-avatar">
-                  {(c.author_name || c.author?.username || '?').charAt(0).toUpperCase()}
-                </div>
-                <div className="comment-body">
-                  <div className="comment-header">
-                    <strong>{c.author_name || c.author?.username || 'Anonyme'}</strong>
-                    <span className="comment-date">
-                      {new Date(c.created_at || Date.now()).toLocaleDateString('fr-FR', {
-                        day: 'numeric', month: 'long', year: 'numeric',
-                      })}
-                    </span>
+              <li key={c.id} className="comment-item-wrapper">
+                {/* Commentaire principal */}
+                <div className="comment-item">
+                  <div className="comment-avatar">
+                    {(c.author_name || c.author?.username || '?').charAt(0).toUpperCase()}
                   </div>
-                  <p className="comment-text">{c.content}</p>
+                  <div className="comment-body">
+                    <div className="comment-header">
+                      <strong>{c.author_name || c.author?.username || 'Anonyme'}</strong>
+                      <span className="comment-date">
+                        {new Date(c.created_at || Date.now()).toLocaleDateString('fr-FR', {
+                          day: 'numeric', month: 'long', year: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                    <p className="comment-text">{c.content}</p>
+                  </div>
                 </div>
+
+                {/* Réponses imbriquées */}
+                {c.replies && c.replies.length > 0 && (
+                  <ul className="comment-replies">
+                    {c.replies.map((r) => (
+                      <li key={r.id} className="comment-item comment-reply">
+                        <div className="comment-avatar" style={{ background: '#7c2d12' }}>
+                          {(r.author_name || r.author?.username || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="comment-body">
+                          <div className="comment-header">
+                            <strong>
+                              {r.author_name || r.author?.username || 'Anonyme'}
+                              <span style={{
+                                marginLeft: 8, fontSize: 11,
+                                background: '#7c2d12', color: '#fff',
+                                padding: '1px 6px', borderRadius: 8,
+                              }}>
+                                Admin
+                              </span>
+                            </strong>
+                            <span className="comment-date">
+                              {new Date(r.created_at || Date.now()).toLocaleDateString('fr-FR', {
+                                day: 'numeric', month: 'long', year: 'numeric',
+                              })}
+                            </span>
+                          </div>
+                          <p className="comment-text">{r.content}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             ))}
           </ul>

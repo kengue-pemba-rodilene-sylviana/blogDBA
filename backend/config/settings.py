@@ -7,19 +7,11 @@ import dj_database_url
 from dotenv import load_dotenv
 
 
-# ============================================================
-# 1. CHEMINS ET VARIABLES D'ENVIRONNEMENT
-# ============================================================
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Charge le fichier .env situé à la racine du projet Django
 load_dotenv(BASE_DIR / ".env")
 
-
-# ============================================================
-# 2. SÉCURITÉ DJANGO
-# ============================================================
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -37,11 +29,6 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-
-# ============================================================
-# 3. BASE DE DONNÉES SUPABASE - POSTGRESQL
-# ============================================================
-
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
@@ -54,11 +41,6 @@ DATABASES = {
         ssl_require=True
     )
 }
-
-
-# ============================================================
-# 4. APPLICATIONS DJANGO
-# ============================================================
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -77,16 +59,8 @@ INSTALLED_APPS = [
 ]
 
 
-# ============================================================
-# 5. UTILISATEUR PERSONNALISÉ
-# ============================================================
-
 AUTH_USER_MODEL = "blog.User"
 
-
-# ============================================================
-# 6. MIDDLEWARE
-# ============================================================
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -101,20 +75,12 @@ MIDDLEWARE = [
 ]
 
 
-# ============================================================
-# 7. CONFIGURATION URL
-# ============================================================
-
 ROOT_URLCONF = "config.urls"
 
 WSGI_APPLICATION = "config.wsgi.application"
 
 ASGI_APPLICATION = "config.asgi.application"
-
-
-# ============================================================
-# 8. TEMPLATES
-# ============================================================
+ 
 
 TEMPLATES = [
     {
@@ -133,9 +99,6 @@ TEMPLATES = [
 ]
 
 
-# ============================================================
-# 9. VALIDATION DES MOTS DE PASSE
-# ============================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -153,10 +116,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# ============================================================
-# 10. LANGUE ET FUSEAU HORAIRE
-# ============================================================
-
 LANGUAGE_CODE = "fr-fr"
 
 TIME_ZONE = "Africa/Brazzaville"
@@ -165,10 +124,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# ============================================================
-# 11. FICHIERS STATIQUES
-# ============================================================
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -185,10 +140,6 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# ============================================================
-# 12. CONFIGURATION CORS - FRONTEND
-# ============================================================
-
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
@@ -200,11 +151,6 @@ CORS_ALLOWED_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
-
-
-# ============================================================
-# 13. DJANGO REST FRAMEWORK
-# ============================================================
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -221,11 +167,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-
-# ============================================================
-# 14. CONFIGURATION JWT
-# ============================================================
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -234,11 +175,6 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
 }
 
-
-# ============================================================
-# 15. CONFIGURATION EMAIL
-# ============================================================
-
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 DEFAULT_FROM_EMAIL = os.getenv(
@@ -246,20 +182,10 @@ DEFAULT_FROM_EMAIL = os.getenv(
     "Bookfolio <noreply@bookfolio.local>"
 )
 
-
-# ============================================================
-# 16. RÉINITIALISATION DU MOT DE PASSE
-# ============================================================
-
 PASSWORD_RESET_FRONTEND_URL = os.getenv(
     "PASSWORD_RESET_FRONTEND_URL",
     "http://localhost:5173/reset-password"
 )
-
-
-# ============================================================
-# 17. INTÉGRATION GOOGLE APPS SCRIPT (GAS)
-# ============================================================
 
 GAS_EMAIL_URL = os.getenv("GAS_EMAIL_URL", "")
 

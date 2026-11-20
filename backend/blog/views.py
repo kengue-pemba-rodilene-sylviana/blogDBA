@@ -22,16 +22,12 @@ from .serializers import (
     FavoriteSerializer,
     UserSerializer,
     AdminUserSerializer,
+    ArticleViewHistorySerializer,
 )
 from .mailer import send_email_via_gas
 
 
 User = get_user_model()
-
-
-# ============================================================
-# AUTHENTIFICATION
-# ============================================================
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -118,7 +114,6 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         user.save(update_fields=["password"])
         return Response({"detail": "Votre mot de passe a été réinitialisé."}, status=status.HTTP_200_OK)
 
-
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def me(request):
@@ -127,7 +122,10 @@ def me(request):
         for field in ['username', 'email', 'first_name', 'last_name']:
             if field in request.data:
                 setattr(u, field, request.data[field])
-        u.save()
+        try:
+            u.save()
+        except Exception as e:
+            return Response({'detail': str(e)}, status=400)
     return Response({
         'id': u.id,
         'username': u.username,
@@ -139,29 +137,6 @@ def me(request):
         'role': getattr(u, 'role', None),
         'date_joined': u.date_joined,
     })
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def password_change(request):
-    old = request.data.get('old_password', '')
-    new = request.data.get('new_password', '')
-    if not old or not new:
-        return Response({'detail': 'Les deux champs sont obligatoires.'}, status=400)
-    if not request.user.check_password(old):
-        return Response({'old_password': 'Mot de passe actuel incorrect.'}, status=400)
-    try:
-        validate_password(new, user=request.user)
-    except DjangoValidationError as e:
-        return Response({'new_password': list(e.messages)}, status=400)
-    request.user.set_password(new)
-    request.user.save()
-    return Response({'detail': 'Mot de passe modifié.'})
-
-
-# ============================================================
-# ARTICLES / CATEGORIES
-# ============================================================
 
 class IsAuthorOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -204,10 +179,6 @@ class ArticleViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated(), IsAuthorOrReadOnly()]
 
 
-# ============================================================
-# COMMENTAIRES
-# ============================================================
-
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
@@ -218,10 +189,11 @@ class CommentViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_queryset(self):
-        queryset = Comment.objects.select_related("author", "article")
+        queryset = Comment.objects.select_related("author", "article").prefetch_related("replies__author")
         article_id = self.request.query_params.get("article")
         if article_id:
-            queryset = queryset.filter(article_id=article_id)
+            # Ne renvoyer que les racines, les réponses viendront dans "replies"
+            queryset = queryset.filter(article_id=article_id, parent__isnull=True)
         return queryset
 
     def perform_create(self, serializer):
@@ -239,32 +211,41 @@ class CommentViewSet(viewsets.ModelViewSet):
         if instance.author_id != self.request.user.id and not self.request.user.is_staff:
             raise PermissionDenied("Vous ne pouvez supprimer que vos propres commentaires.")
         instance.delete()
-
-
-# ============================================================
-# ADMIN — UTILISATEURS
-# ============================================================
-
+        
+    
 class AdminUserViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,      # ← AJOUT
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = User.objects.all().order_by("-date_joined")
     serializer_class = AdminUserSerializer
     permission_classes = [IsAdminUser]
-    http_method_names = ["get", "delete", "head", "options"]
+    http_method_names = ["get", "patch", "delete", "head", "options"]
 
-    def perform_destroy(self, instance):
-        if instance.id == self.request.user.id:
-            raise PermissionDenied("Vous ne pouvez pas supprimer votre propre compte.")
-        instance.delete()
+    def perform_update(self, serializer):
+        target = serializer.instance
+        data = serializer.validated_data
 
+        # Un admin ne peut pas modifier son propre rôle / statut
+        if target.id == self.request.user.id:
+            if "role" in data or "is_superuser" in data or "is_staff" in data:
+                raise PermissionDenied("Vous ne pouvez pas modifier votre propre rôle.")
+            if "is_active" in data and not data["is_active"]:
+                raise PermissionDenied("Vous ne pouvez pas désactiver votre propre compte.")
 
-# ============================================================
-# FAVORIS & HISTORIQUE DE LECTURE
-# ============================================================
+        # Synchronisation du rôle : si role="admin" → is_staff=True
+        if "role" in data:
+            if data["role"] == "admin":
+                target.is_staff = True
+                target.is_superuser = True
+            else:
+                target.is_staff = False
+                target.is_superuser = False
+
+        serializer.save()
 
 class FavoriteListCreateView(generics.ListCreateAPIView):
     serializer_class = FavoriteSerializer
@@ -286,15 +267,64 @@ class FavoriteDestroyView(generics.DestroyAPIView):
 
 
 class ArticleViewListCreateView(generics.ListCreateAPIView):
+    serializer_class = ArticleViewHistorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return (
+            ArticleView.objects
+            .filter(user=self.request.user)
+            .select_related('article', 'article__category')
+        )
+
+    def perform_create(self, serializer):
+        article = serializer.validated_data['article']
+        progress = self.request.data.get('progress', 0)
+        try:
+            progress = max(0, min(100, int(progress)))
+        except (TypeError, ValueError):
+            progress = 0
+
+        obj, _ = ArticleView.objects.update_or_create(
+            user=self.request.user,
+            article=article,
+            defaults={'progress': progress},
+        )
+        serializer.instance = obj
+
+
+class ArticleViewDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ArticleViewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return ArticleView.objects.filter(user=self.request.user)
 
-    def perform_create(self, serializer):
-        article = serializer.validated_data['article']
-        ArticleView.objects.get_or_create(
-            user=self.request.user,
-            article=article,
-        )
+
+class ArticleViewClearView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request):
+        count, _ = ArticleView.objects.filter(user=request.user).delete()
+        return Response({'deleted': count}, status=status.HTTP_200_OK)
+        
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def password_change(request):
+    old = request.data.get('old_password', '')
+    new = request.data.get('new_password', '')
+
+    if not old or not new:
+        return Response({'detail': 'Les deux champs sont obligatoires.'}, status=400)
+
+    if not request.user.check_password(old):
+        return Response({'old_password': 'Mot de passe actuel incorrect.'}, status=400)
+
+    try:
+        validate_password(new, user=request.user)
+    except DjangoValidationError as e:
+        return Response({'new_password': list(e.messages)}, status=400)
+
+    request.user.set_password(new)
+    request.user.save()
+    return Response({'detail': 'Mot de passe modifié avec succès.'})

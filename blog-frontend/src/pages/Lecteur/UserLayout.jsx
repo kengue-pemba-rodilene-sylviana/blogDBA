@@ -23,18 +23,12 @@ const UserLayout = () => {
         </NavLink>
 
         <nav className="lec-nav">
-          <NavLink to="/lecteur/profile" className="lec-nav-item">
-            Profil
-          </NavLink>
-          <NavLink to="/lecteur/articles" className="lec-nav-item">     
-            Articles
-          </NavLink>
-          <NavLink to="/lecteur/comments" className="lec-nav-item">
-            Commentaires
-          </NavLink>
-          <NavLink to="/lecteur/password" className="lec-nav-item">
-            Mot de passe
-          </NavLink>
+          <NavLink to="/lecteur/profile" className="lec-nav-item">Profil</NavLink>
+          <NavLink to="/lecteur/articles" className="lec-nav-item">Articles</NavLink>
+          <NavLink to="/lecteur/history" className="lec-nav-item">Historique</NavLink>  
+          <NavLink to="/lecteur/comments" className="lec-nav-item">Commentaires</NavLink>
+          <NavLink to="/lecteur/password" className="lec-nav-item">Mot de passe</NavLink>
+
         </nav>
 
         <div className="lec-user-menu">

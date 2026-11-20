@@ -45,7 +45,21 @@ const AdminLayout = () => {
           <NavLink to="/admin/users" className="admin-nav-link">
             <span></span> Utilisateurs
           </NavLink>
+
+          {/* Séparateur */}
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            margin: '12px 8px',
+          }} />
+
+          <NavLink to="/admin/profile" className="admin-nav-link">
+            <span></span> Mon profil
+          </NavLink>
+          <NavLink to="/admin/password" className="admin-nav-link">
+            <span></span> Mot de passe
+          </NavLink>
         </nav>
+
         <div className="admin-sidebar-footer">
           <div className="admin-user">
             <span className="admin-avatar">{getInitial()}</span>

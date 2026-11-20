@@ -11,7 +11,9 @@ const UserComments = () => {
   useEffect(() => {
     api.get('/comments/')
       .then((r) => {
-        const mine = r.data.filter((c) => (c.author?.id || c.author) === user?.id);
+        const mine = r.data.filter(
+          (c) => (c.author?.id || c.author) === user?.id
+        );
         setComments(mine);
       })
       .catch(console.error)
@@ -60,8 +62,8 @@ const UserComments = () => {
               <p className="lec-comment-quote">« {c.content} »</p>
               <div className="lec-comment-meta" style={{ justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Link to={`/articles/${c.article}`} className="lec-comment-article">
-                    Article #{c.article}
+                  <Link to={`/lecteur/articles/${c.article}`} className="lec-comment-article">
+                    {c.article_title || `Article #${c.article}`}
                   </Link>
                   <span className="lec-comment-sep">·</span>
                   <span>{formatDate(c.created_at)}</span>
@@ -70,6 +72,44 @@ const UserComments = () => {
                   Supprimer
                 </button>
               </div>
+
+              {/* ===== RÉPONSES (fournies par l'API) ===== */}
+              {c.replies && c.replies.length > 0 && (
+                <div className="lec-replies">
+                  <p className="lec-replies-title">
+                    {c.replies.length} réponse{c.replies.length > 1 ? 's' : ''}
+                  </p>
+                  {c.replies.map((r) => (
+                    <div key={r.id} className="lec-reply">
+                      <div className="lec-reply-header">
+                        <span className="lec-reply-author">
+                          {r.author_name || 'Anonyme'}
+                        </span>
+                        <span className="lec-comment-sep">·</span>
+                        <span>{formatDate(r.created_at)}</span>
+                      </div>
+                      <p className="lec-reply-content">« {r.content} »</p>
+                      {/* Sous-réponses éventuelles (récursif 1 niveau) */}
+                      {r.replies && r.replies.length > 0 && (
+                        <div className="lec-replies" style={{ marginTop: 8 }}>
+                          {r.replies.map((rr) => (
+                            <div key={rr.id} className="lec-reply">
+                              <div className="lec-reply-header">
+                                <span className="lec-reply-author">
+                                  {rr.author_name || 'Anonyme'}
+                                </span>
+                                <span className="lec-comment-sep">·</span>
+                                <span>{formatDate(rr.created_at)}</span>
+                              </div>
+                              <p className="lec-reply-content">« {rr.content} »</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

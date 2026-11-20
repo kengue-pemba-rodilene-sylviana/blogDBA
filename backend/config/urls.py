@@ -15,6 +15,7 @@ from blog.views import (
     ArticleViewListCreateView,
     me,
     password_change,
+    ArticleViewClearView,
 )
 
 router = DefaultRouter()
@@ -36,6 +37,7 @@ urlpatterns = [
     path("api/favorites/<int:pk>/", FavoriteDestroyView.as_view(), name="favorite-detail"),
     path("api/", include(router.urls)),
     path("api/article-views/", ArticleViewListCreateView.as_view(), name="article-view-list"),
+    path("api/article-views/clear/", ArticleViewClearView.as_view(), name="article-view-clear"),
+    path('api/auth/password-change/', password_change, name='password_change'),
     
-
 ]
