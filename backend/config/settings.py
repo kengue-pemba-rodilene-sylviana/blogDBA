@@ -141,7 +141,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 CORS_ALLOWED_ORIGINS = [
-    "https://blog-dba.netlify.app",
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "https://blog-dba.netlify.app"
+    ).split(",")
+    if origin.strip()
 ]
 
 REST_FRAMEWORK = {
