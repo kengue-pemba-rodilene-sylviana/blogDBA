@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import './Auth.css';
+import './auth.css';
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -153,4 +153,5 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
+
 
