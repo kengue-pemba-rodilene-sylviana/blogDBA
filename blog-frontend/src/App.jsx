@@ -27,12 +27,12 @@ import AdminPassword from './pages/admin/AdminPassword';
 import AdminUserEdit from './pages/admin/AdminUserEdit';
 
 // Lecteur
-import UserLayout from './pages/Lecteur/UserLayout';
-import UserDashboard from './pages/Lecteur/UserDashboard';
-import UserProfile from './pages/Lecteur/UserProfile';
-import UserComments from './pages/Lecteur/UserComments';
-import UserPassword from './pages/Lecteur/UserPassword';
-import UserHistory from './pages/Lecteur/UserHistory';
+import UserLayout from './pages/lecteur/UserLayout';
+import UserDashboard from './pages/lecteur/UserDashboard';
+import UserProfile from './pages/lecteur/UserProfile';
+import UserComments from './pages/lecteur/UserComments';
+import UserPassword from './pages/lecteur/UserPassword';
+import UserHistory from './pages/lecteur/UserHistory';
 
 
 function App() {
