@@ -1,0 +1,95 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+
+import PublicLayout from './components/PublicLayout';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Pages publiques
+import Home from './pages/Home';
+import Login from './pages/login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import About from './pages/About';
+import Articles from './pages/Articles';
+import ArticleDetail from './pages/ArticleDetail';
+
+// Admin
+import AdminLayout from './pages/admin/AdminLayout';
+import Dashboard from './pages/admin/Dashboard';
+import AdminArticles from './pages/admin/AdminArticles';
+import ArticleForm from './pages/admin/ArticleForm';
+import AdminComments from './pages/admin/AdminComments';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminProfile from './pages/admin/AdminProfile';
+import AdminPassword from './pages/admin/AdminPassword';
+import AdminUserEdit from './pages/admin/AdminUserEdit';
+
+// Lecteur
+import UserLayout from './pages/lecteur/UserLayout';
+import UserDashboard from './pages/lecteur/UserDashboard';
+import UserProfile from './pages/lecteur/UserProfile';
+import UserComments from './pages/lecteur/UserComments';
+import UserPassword from './pages/lecteur/UserPassword';
+import UserHistory from './pages/lecteur/UserHistory';
+
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+
+          {/* ====== PAGES PUBLIQUES (avec Navbar) ====== */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/articles" element={<Articles />} />
+            <Route path="/articles/:id" element={<ArticleDetail />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+          </Route>
+
+          {/* ====== ESPACE LECTEUR (avec Navbar) ====== */}
+          <Route element={<ProtectedRoute allowedRoles={['reader', 'admin']} />}>
+            <Route path="/lecteur" element={<UserLayout />}>
+              <Route index element={<UserDashboard />} />
+              <Route path="profile" element={<UserProfile />} />
+              <Route path="comments" element={<UserComments />} />
+              <Route path="articles" element={<Articles />} />
+              <Route path="articles/:id" element={<ArticleDetail />} />
+              <Route path="password" element={<UserPassword />} />
+              <Route path="history" element={<UserHistory />} />
+            </Route>
+          </Route>
+
+          {/* ====== ESPACE ADMIN (sans Navbar) ====== */}
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="articles" element={<AdminArticles />} />
+              <Route path="articles/new" element={<ArticleForm />} />
+              <Route path="categories" element={<AdminCategories />} /> 
+              <Route path="articles/:id/edit" element={<ArticleForm />} />
+              <Route path="comments" element={<AdminComments />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="profile" element={<AdminProfile />} />
+              <Route path="password" element={<AdminPassword />} />
+              <Route path="users/:id/edit" element={<AdminUserEdit />} />
+    
+            </Route>
+          </Route>
+
+          {/* 404 */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;
