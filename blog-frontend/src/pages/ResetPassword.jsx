@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import './Auth.css';
@@ -13,7 +13,7 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Redirection automatique après succès
+  // Redirection automatique aprÃ¨s succÃ¨s
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => navigate('/login'), 3000);
@@ -30,7 +30,7 @@ const ResetPassword = () => {
       return;
     }
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères.');
+      setError('Le mot de passe doit contenir au moins 8 caractÃ¨res.');
       return;
     }
 
@@ -41,7 +41,7 @@ const ResetPassword = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-        'Le lien est invalide ou a expiré. Veuillez refaire la demande.'
+        'Le lien est invalide ou a expirÃ©. Veuillez refaire la demande.'
       );
     } finally {
       setLoading(false);
@@ -54,14 +54,14 @@ const ResetPassword = () => {
       <div className="auth-visual">
         <div className="auth-visual-content">
           <Link to="/" className="auth-logo"> Bookfolio</Link>
-          <h2>Un nouveau départ.</h2>
+          <h2>Un nouveau dÃ©part.</h2>
           <p>
-            Choisissez un nouveau mot de passe sécurisé pour reprendre
+            Choisissez un nouveau mot de passe sÃ©curisÃ© pour reprendre
             le fil de vos lectures.
           </p>
           <blockquote>
-            « Tourner la page, c'est aussi recommencer. »
-            <cite>— Bookfolio</cite>
+            Â« Tourner la page, c'est aussi recommencer. Â»
+            <cite>â€” Bookfolio</cite>
           </blockquote>
         </div>
         <div className="auth-visual-decor"></div>
@@ -74,12 +74,12 @@ const ResetPassword = () => {
             <>
               <div className="auth-card-header">
                 <h1>Nouveau mot de passe</h1>
-                <p>Choisissez un mot de passe solide et facile à retenir.</p>
+                <p>Choisissez un mot de passe solide et facile Ã  retenir.</p>
               </div>
 
               {error && (
                 <div className="auth-alert error">
-                  <span>⚠</span> {error}
+                  <span>âš </span> {error}
                 </div>
               )}
 
@@ -90,7 +90,7 @@ const ResetPassword = () => {
                     <input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Au moins 8 caractères"
+                      placeholder="Au moins 8 caractÃ¨res"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -101,7 +101,7 @@ const ResetPassword = () => {
                       className="toggle-password"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? '🙈' : '👁'}
+                      {showPassword ? 'ðŸ™ˆ' : 'ðŸ‘'}
                     </button>
                   </div>
                 </div>
@@ -111,7 +111,7 @@ const ResetPassword = () => {
                   <input
                     id="confirmPassword"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
@@ -120,22 +120,22 @@ const ResetPassword = () => {
                 </div>
 
                 <button type="submit" className="auth-submit" disabled={loading}>
-                  {loading ? <span className="spinner"></span> : 'Réinitialiser'}
+                  {loading ? <span className="spinner"></span> : 'RÃ©initialiser'}
                 </button>
               </form>
 
               <p className="auth-switch">
-                <Link to="/login">Retour à la connexion</Link>
+                <Link to="/login">Retour Ã  la connexion</Link>
               </p>
             </>
           ) : (
-            /* ---- État de succès ---- */
+            /* ---- Ã‰tat de succÃ¨s ---- */
             <div className="auth-success-state">
-              <div className="success-icon">✅</div>
-              <h1>Mot de passe modifié !</h1>
+              <div className="success-icon">âœ…</div>
+              <h1>Mot de passe modifiÃ© !</h1>
               <p>
-                Votre mot de passe a été réinitialisé avec succès.
-                Vous allez être redirigé vers la page de connexion...
+                Votre mot de passe a Ã©tÃ© rÃ©initialisÃ© avec succÃ¨s.
+                Vous allez Ãªtre redirigÃ© vers la page de connexion...
               </p>
               <Link to="/login" className="auth-submit as-link">
                 Se connecter maintenant
@@ -145,7 +145,7 @@ const ResetPassword = () => {
         </div>
 
         <p className="auth-footer-note">
-          © 2026 Bookfolio — Tous droits réservés
+          Â© 2026 Bookfolio â€” Tous droits rÃ©servÃ©s
         </p>
       </div>
     </div>
