@@ -1,7 +1,7 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
-import './auth.css';
+import './Auth.css';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -20,7 +20,7 @@ const ForgotPassword = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-        "Impossible d'envoyer l'email. VÃ©rifiez votre adresse et rÃ©essayez."
+        "Impossible d'envoyer l'email. Vérifiez votre adresse et réessayez."
       );
     } finally {
       setLoading(false);
@@ -35,12 +35,12 @@ const ForgotPassword = () => {
           <Link to="/" className="auth-logo"> Bookfolio</Link>
           <h2>Pas de panique.</h2>
           <p>
-            Cela arrive Ã  tout le monde d'oublier un mot de passe.
-            Nous allons vous aider Ã  retrouver l'accÃ¨s Ã  votre bibliothÃ¨que.
+            Cela arrive à tout le monde d'oublier un mot de passe.
+            Nous allons vous aider à retrouver l'accès à votre bibliothèque.
           </p>
           <blockquote>
-            Â« Chaque lecteur a le droit Ã  une seconde chance. Â»
-            <cite>â€” Bookfolio</cite>
+            « Chaque lecteur a le droit à une seconde chance. »
+            <cite>— Bookfolio</cite>
           </blockquote>
         </div>
         <div className="auth-visual-decor"></div>
@@ -52,16 +52,16 @@ const ForgotPassword = () => {
           {!sent ? (
             <>
               <div className="auth-card-header">
-                <h1>Mot de passe oubliÃ© ?</h1>
+                <h1>Mot de passe oublié ?</h1>
                 <p>
-                  Entrez l'adresse email associÃ©e Ã  votre compte.
-                  Nous vous enverrons un lien pour rÃ©initialiser votre mot de passe.
+                  Entrez l'adresse email associée à votre compte.
+                  Nous vous enverrons un lien pour réinitialiser votre mot de passe.
                 </p>
               </div>
 
               {error && (
                 <div className="auth-alert error">
-                  <span>âš </span> {error}
+                  <span>⚠</span> {error}
                 </div>
               )}
 
@@ -90,24 +90,24 @@ const ForgotPassword = () => {
 
               <p className="auth-switch">
                 Vous vous en souvenez ?{' '}
-                <Link to="/login">Retour Ã  la connexion</Link>
+                <Link to="/login">Retour à la connexion</Link>
               </p>
             </>
           ) : (
-            /* ---- Ã‰tat "email envoyÃ©" ---- */
+            /* ---- État "email envoyé" ---- */
             <div className="auth-success-state">
-              <div className="success-icon">âœ‰ï¸</div>
-              <h1>Email envoyÃ© !</h1>
+              <div className="success-icon">✉️</div>
+              <h1>Email envoyé !</h1>
               <p>
-                Si un compte est associÃ© Ã  <strong>{email}</strong>,
-                vous recevrez un lien de rÃ©initialisation dans quelques minutes.
+                Si un compte est associé à <strong>{email}</strong>,
+                vous recevrez un lien de réinitialisation dans quelques minutes.
               </p>
               <p className="success-hint">
-                Pensez Ã  vÃ©rifier votre dossier Â« spam Â» ou Â« courrier indÃ©sirable Â».
+                Pensez à vérifier votre dossier « spam » ou « courrier indésirable ».
               </p>
 
               <Link to="/login" className="auth-submit as-link">
-                Retour Ã  la connexion
+                Retour à la connexion
               </Link>
 
               <button
@@ -122,7 +122,7 @@ const ForgotPassword = () => {
         </div>
 
         <p className="auth-footer-note">
-          Â© 2026 Bookfolio â€” Tous droits rÃ©servÃ©s
+          © 2026 Bookfolio — Tous droits réservés
         </p>
       </div>
     </div>
@@ -130,6 +130,3 @@ const ForgotPassword = () => {
 };
 
 export default ForgotPassword;
-
-
-

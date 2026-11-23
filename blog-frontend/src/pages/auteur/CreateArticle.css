@@ -1,0 +1,15 @@
+/* Styles propres au formulaire de création (le style des champs est dans
+   AuthorDashboard.css via .author-form) */
+
+.create-message {
+  display: block;
+  margin: 0 0 18px;
+  padding: 12px 16px;
+  border: 1px solid rgba(232, 140, 108, 0.35);
+  border-radius: 12px;
+  background: #fde6dc;
+  color: #9a3412;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}

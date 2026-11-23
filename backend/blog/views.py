@@ -6,6 +6,9 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 
+from django.utils import timezone
+from rest_framework.decorators import action
+
 from rest_framework import generics, permissions, viewsets, mixins, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotAuthenticated, ValidationError, PermissionDenied
@@ -33,6 +36,21 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.save()
+
+        return Response({
+            "message": "Compte créé avec succès.",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role,
+            }
+        }, status=status.HTTP_201_CREATED)
 
 class PasswordResetRequestView(generics.GenericAPIView):
     """Demande un lien de réinitialisation sans révéler si l'adresse existe."""
@@ -157,26 +175,162 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class ArticleViewSet(viewsets.ModelViewSet):
     serializer_class = ArticleSerializer
-    permission_classes = [IsAuthorOrReadOnly]
     search_fields = ["title", "content", "category__name"]
     ordering_fields = ["published_at", "title"]
 
+    def is_admin_user(self, user):
+        return (
+            user.is_authenticated
+            and (
+                user.is_staff
+                or getattr(user, "role", None) == "admin"
+            )
+        )
+
     def get_queryset(self):
-        queryset = Article.objects.select_related("author", "category").prefetch_related("comments__author")
+        queryset = (
+            Article.objects
+            .select_related("author", "category")
+            .prefetch_related("comments__author")
+        )
+
+        user = self.request.user
+
+        if self.is_admin_user(user):
+            pass
+        elif user.is_authenticated and getattr(user, "role", None) == "author":
+            queryset = queryset.filter(author=user)
+        else:
+            queryset = queryset.filter(
+                status=Article.Status.PUBLISHED
+            )
+
         category_id = self.request.query_params.get("category")
         if category_id:
             queryset = queryset.filter(category_id=category_id)
-        return queryset
 
-    def perform_create(self, serializer):
-        if not self.request.user.is_authenticated:
-            raise NotAuthenticated()
-        serializer.save(author=self.request.user)
+        return queryset
 
     def get_permissions(self):
         if self.action in ("list", "retrieve"):
             return [permissions.AllowAny()]
-        return [IsAuthenticated(), IsAuthorOrReadOnly()]
+
+        if self.action in ("approve", "reject"):
+            return [IsAuthenticated()]
+
+        return [
+            IsAuthenticated(),
+            IsAuthorOrReadOnly()
+        ]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+
+        if self.is_admin_user(user):
+            serializer.save(
+                author=user,
+                status=Article.Status.PUBLISHED
+            )
+        elif getattr(user, "role", None) == "author":
+            serializer.save(
+                author=user,
+                status=Article.Status.DRAFT
+            )
+        else:
+            raise PermissionDenied(
+                "Seuls les auteurs et administrateurs peuvent créer des articles."
+            )
+
+    @action(detail=False, methods=["get"], url_path="mine")
+    def mine(self, request):
+        articles = (
+            Article.objects
+            .filter(author=request.user)
+            .select_related("category")
+            .order_by("-updated_at")
+        )
+
+        serializer = self.get_serializer(articles, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def submit(self, request, pk=None):
+        article = self.get_object()
+
+        if article.author_id != request.user.id:
+            raise PermissionDenied(
+                "Vous ne pouvez soumettre que vos propres articles."
+            )
+
+        if article.status not in (
+            Article.Status.DRAFT,
+            Article.Status.REJECTED
+        ):
+            raise ValidationError(
+                {"detail": "Cet article ne peut pas être soumis actuellement."}
+            )
+
+        article.status = Article.Status.PENDING
+        article.submitted_at = timezone.now()
+        article.reviewed_at = None
+        article.review_note = ""
+        article.save()
+
+        return Response({
+            "message": "Article envoyé à l'administrateur pour validation.",
+            "status": article.status
+        })
+
+    @action(detail=True, methods=["post"])
+    def approve(self, request, pk=None):
+        if not self.is_admin_user(request.user):
+            raise PermissionDenied("Réservé aux administrateurs.")
+
+        article = self.get_object()
+
+        if article.status != Article.Status.PENDING:
+            raise ValidationError(
+                {"detail": "Cet article n'est pas en attente de validation."}
+            )
+
+        article.status = Article.Status.PUBLISHED
+        article.reviewed_at = timezone.now()
+        article.review_note = ""
+        article.save()
+
+        return Response({
+            "message": "Article publié avec succès.",
+            "status": article.status
+        })
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        if not self.is_admin_user(request.user):
+            raise PermissionDenied("Réservé aux administrateurs.")
+
+        article = self.get_object()
+        note = request.data.get("review_note", "").strip()
+
+        if article.status != Article.Status.PENDING:
+            raise ValidationError(
+                {"detail": "Cet article n'est pas en attente de validation."}
+            )
+
+        if not note:
+            raise ValidationError({
+                "review_note": "Veuillez indiquer le motif du refus."
+            })
+
+        article.status = Article.Status.REJECTED
+        article.reviewed_at = timezone.now()
+        article.review_note = note
+        article.save()
+
+        return Response({
+            "message": "Article refusé.",
+            "status": article.status,
+            "review_note": article.review_note
+        })
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -267,8 +421,12 @@ class FavoriteDestroyView(generics.DestroyAPIView):
 
 
 class ArticleViewListCreateView(generics.ListCreateAPIView):
-    serializer_class = ArticleViewHistorySerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return ArticleViewSerializer
+        return ArticleViewHistorySerializer
 
     def get_queryset(self):
         return (
@@ -279,7 +437,9 @@ class ArticleViewListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         article = serializer.validated_data['article']
+
         progress = self.request.data.get('progress', 0)
+
         try:
             progress = max(0, min(100, int(progress)))
         except (TypeError, ValueError):
@@ -290,6 +450,7 @@ class ArticleViewListCreateView(generics.ListCreateAPIView):
             article=article,
             defaults={'progress': progress},
         )
+
         serializer.instance = obj
 
 

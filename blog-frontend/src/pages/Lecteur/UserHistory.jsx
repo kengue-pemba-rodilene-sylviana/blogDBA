@@ -20,12 +20,41 @@ const UserHistory = () => {
   const [period, setPeriod] = useState('all');
   const [category, setCategory] = useState('all');
 
-  // ---- Chargement ----
+
   useEffect(() => {
-    api.get('/article-views/')
-      .then((res) => setHistory(res.data))
-      .catch(() => setError("Impossible de charger l'historique."))
-      .finally(() => setLoading(false));
+    const loadHistory = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        const res = await api.get('/article-views/');
+
+        console.log("Réponse historique :", res.data);
+
+        const data = res.data;
+
+        // Compatible avec une réponse paginée ou non paginée
+        const items = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.results)
+            ? data.results
+            : [];
+
+        setHistory(items);
+      } catch (err) {
+        console.error(
+          "Erreur chargement historique :",
+          err.response?.status,
+          err.response?.data || err.message
+        );
+
+        setError("Impossible de charger l'historique.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistory();
   }, []);
 
   // ---- Catégories dynamiques ----
@@ -55,7 +84,10 @@ const UserHistory = () => {
     if (period !== 'all') {
       const days = { '7d': 7, '30d': 30, '90d': 90 }[period];
       const limit = Date.now() - days * 86400 * 1000;
-      result = result.filter((h) => new Date(h.viewed_at).getTime() >= limit);
+      result = result.filter((h) => {
+        const date = new Date(h.viewed_at).getTime();
+        return Number.isFinite(date) && date >= limit;
+      });
     }
 
     return result;
@@ -204,8 +236,7 @@ const UserHistory = () => {
                     <div className="history-progress-bar">
                       <div
                         className="history-progress-fill"
-                        style={{ width: `${item.progress}%` }}
-                      />
+                       style={{width: `${Math.min(100, Math.max(0, item.progress))}%`}}/>
                     </div>
                     <span className="history-progress-label">{item.progress}% lu</span>
                   </div>

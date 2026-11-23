@@ -2,13 +2,19 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+
 class User(AbstractUser):
     class Role(models.TextChoices):
         READER = "reader", "Lecteur"
+        AUTHOR = "author", "Auteur"
         ADMIN = "admin", "Administrateur"
 
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=16, choices=Role.choices, default=Role.READER)
+    role = models.CharField(
+        max_length=16,
+        choices=Role.choices,
+        default=Role.READER
+    )
 
     def __str__(self):
         return self.username
@@ -27,24 +33,63 @@ class Category(models.Model):
         return self.name
 
 
+
 class Article(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="articles")
-    category = models.ForeignKey(Category, null=True, blank=True, on_delete=models.SET_NULL, related_name="articles")
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Brouillon"
+        PENDING = "pending", "En attente"
+        PUBLISHED = "published", "Publié"
+        REJECTED = "rejected", "Refusé"
+
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="articles"
+    )
+    category = models.ForeignKey(
+        Category,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="articles"
+    )
     title = models.CharField(max_length=250)
     content = models.TextField()
     image_url = models.URLField(max_length=1000, blank=True)
+
+    status = models.CharField(
+        max_length=16,
+        choices=Status.choices,
+        default=Status.DRAFT,
+        db_index=True
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_note = models.TextField(blank=True)
+
     published_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-published_at"]
         indexes = [
-            models.Index(fields=["author", "-published_at"], name="article_author_date_idx"),
-            models.Index(fields=["category", "-published_at"], name="article_category_date_idx"),
+            models.Index(
+                fields=["author", "-published_at"],
+                name="article_author_date_idx"
+            ),
+            models.Index(
+                fields=["category", "-published_at"],
+                name="article_category_date_idx"
+            ),
+            models.Index(
+                fields=["status", "-published_at"],
+                name="article_status_date_idx"
+            ),
         ]
 
     def __str__(self):
         return self.title
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')

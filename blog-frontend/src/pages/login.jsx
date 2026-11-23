@@ -1,7 +1,7 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import './auth.css';
+import './Auth.css';
 
 const Login = () => {
   const { login } = useAuth();
@@ -30,12 +30,12 @@ const Login = () => {
           <Link to="/" className="auth-logo"> Bookfolio</Link>
           <h2>Bon retour parmi nous.</h2>
           <p>
-            Retrouvez vos articles, vos lectures et votre communautÃ©.
-            Chaque page tournÃ©e est un nouveau voyage.
+            Retrouvez vos articles, vos lectures et votre communauté.
+            Chaque page tournée est un nouveau voyage.
           </p>
           <blockquote>
-            Â« Un livre est un rÃªve que vous tenez dans vos mains. Â»
-            <cite>â€” Neil Gaiman</cite>
+            « Un livre est un rêve que vous tenez dans vos mains. »
+            <cite>— Neil Gaiman</cite>
           </blockquote>
         </div>
         <div className="auth-visual-decor"></div>
@@ -46,12 +46,12 @@ const Login = () => {
         <div className="auth-card">
           <div className="auth-card-header">
             <h1>Connexion</h1>
-            <p>AccÃ©dez Ã  votre espace personnel</p>
+            <p>Accédez à votre espace personnel</p>
           </div>
 
           {error && (
             <div className="auth-alert error">
-              <span>âš </span> {error}
+              <span>⚠</span> {error}
             </div>
           )}
 
@@ -72,13 +72,13 @@ const Login = () => {
             <div className="form-group">
               <div className="label-row">
                 <label htmlFor="password">Mot de passe</label>
-                <Link to="/forgot-password" className="forgot-link">Mot de passe oubliÃ© ?</Link>
+                <Link to="/forgot-password" className="forgot-link">Mot de passe oublié ?</Link>
               </div>
               <div className="password-field">
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -90,7 +90,7 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label="Afficher le mot de passe"
                 >
-                  {showPassword ? 'ðŸ™ˆ' : 'ðŸ‘'}
+                  {showPassword ? '🙈' : '👁'}
                 </button>
               </div>
             </div>
@@ -106,12 +106,12 @@ const Login = () => {
 
           <p className="auth-switch">
             Pas encore de compte ?{' '}
-            <Link to="/register">CrÃ©er un compte</Link>
+            <Link to="/register">Créer un compte</Link>
           </p>
         </div>
 
         <p className="auth-footer-note">
-          Â© 2026 Bookfolio â€” Tous droits rÃ©servÃ©s
+          © 2026 Bookfolio — Tous droits réservés
         </p>
       </div>
     </div>
@@ -119,6 +119,3 @@ const Login = () => {
 };
 
 export default Login;
-
-
-

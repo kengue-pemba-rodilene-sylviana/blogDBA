@@ -1,13 +1,13 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
 import PublicLayout from './components/PublicLayout';
-import ProtectedRoute from './components/protectedroute';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages publiques
-import Home from './pages/home';
+import Home from './pages/Home';
 import Login from './pages/login';
-import Register from './pages/register';
+import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import About from './pages/About';
@@ -27,12 +27,23 @@ import AdminPassword from './pages/admin/AdminPassword';
 import AdminUserEdit from './pages/admin/AdminUserEdit';
 
 // Lecteur
-import UserLayout from './pages/Lecteur/UserLayout';
-import UserDashboard from './pages/Lecteur/UserDashboard';
-import UserProfile from './pages/Lecteur/UserProfile';
-import UserComments from './pages/Lecteur/UserComments';
-import UserPassword from './pages/Lecteur/UserPassword';
-import UserHistory from './pages/Lecteur/UserHistory';
+import UserLayout from './pages/lecteur/UserLayout';
+import UserDashboard from './pages/lecteur/UserDashboard';
+import UserProfile from './pages/lecteur/UserProfile';
+import UserComments from './pages/lecteur/UserComments';
+import UserPassword from './pages/lecteur/UserPassword';
+import UserHistory from './pages/lecteur/UserHistory';
+
+//auteur
+import AuthorDashboard from './pages/auteur/AuthorDashboard';
+import CreateArticle from './pages/auteur/CreateArticle';
+import MyArticles from './pages/auteur/MyArticles';
+import Drafts from './pages/auteur/Drafts';
+import PendingArticles from './pages/auteur/PendingArticles';
+import EditArticle from './pages/auteur/EditArticle';
+import AuthorProfile from './pages/auteur/AuthorProfile';
+import AuthorStatistics from './pages/auteur/AuthorStatistics';
+import AuthorComments from './pages/auteur/AuthorComments';
 
 
 function App() {
@@ -50,7 +61,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/reset-password/:uid/:token"element={<ResetPassword />}/>
           </Route>
 
           {/* ====== ESPACE LECTEUR (avec Navbar) ====== */}
@@ -81,6 +92,20 @@ function App() {
               <Route path="users/:id/edit" element={<AdminUserEdit />} />
     
             </Route>
+          </Route>
+
+          {/* ====== ESPACE AUTEUR  ====== */}
+          <Route element={<ProtectedRoute allowedRoles={['author']} />}>
+            <Route path="/auteur" element={<AuthorDashboard />} />
+            <Route path="/auteur/nouvel-article" element={<CreateArticle />} />
+            <Route path="/auteur/articles" element={<MyArticles />} />
+            <Route path="/auteur/brouillons" element={<Drafts />} />
+            <Route path="/auteur/en-attente" element={<PendingArticles />} />
+
+            <Route path="/auteur/articles/:id/modifier" element={<EditArticle />} />
+            <Route path="/auteur/profil" element={<AuthorProfile />} />
+            <Route path="/auteur/statistiques" element={<AuthorStatistics />} />
+            <Route path="/auteur/commentaires" element={<AuthorComments />} />
           </Route>
 
           {/* 404 */}
