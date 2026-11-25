@@ -136,7 +136,7 @@ CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         "CORS_ALLOWED_ORIGINS",
-        "https://blog-dba.netlify.app"
+        "https://dbablog.netlify.app"
     ).split(",")
     if origin.strip()
 ]
